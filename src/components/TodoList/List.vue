@@ -14,7 +14,7 @@
                 <v-spacer></v-spacer>
                 <v-btn color="success" dark @click="dialog = true">Tambah</v-btn>
             </v-card-title>
-            <v-data-table :headers="headers" :items="todos" :search="search">
+            <v-data-table :headers="headers" :items="todos" :search="search" >
                 <template v-slot:[`item.actions`]="{ item }">
                     <v-btn small class="mr-2" @click="editItem(item)">edit</v-btn>
                     <v-btn small @click="deleteItem(item)">delete</v-btn>
@@ -115,7 +115,7 @@ export default{
                 priority: null,
                 note: null,
             };
-        },
-    },
+        }
+    }
 };
 </script>
