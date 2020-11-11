@@ -7,7 +7,7 @@
                 <v-text-field
                     v-model="search"
                     append-icon="mdi-magnify"
-                    label="Searc"
+                    label="Search"
                     single-line
                     hide-details>
                 </v-text-field>
