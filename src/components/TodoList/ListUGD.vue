@@ -12,16 +12,45 @@
                     hide-details>
                 </v-text-field>
                 <v-spacer></v-spacer>
+                <v-select
+                    v-model="sort"
+                    label="Urutkan"
+                    outlined
+                    :items="['Penting','Tidak Penting']"
+                    hide-details>
+                </v-select>
+                <v-spacer></v-spacer>
                 <v-btn color="success" dark @click="dialog = true">Tambah</v-btn>
             </v-card-title>
-            <v-data-table :headers="headers" :items="todos" :search="search" >
-                <!-- v-slot untuk mengubah nilai dalam table, karena defaultnya hanya text, dan faktanya membutuhkan button (action) -->
+            <v-data-table :headers="headers" :items="todos" :search="search" item-key="note" :expanded.sync="expanded" show-expand>
+                <template v-slot:expanded-item="{ headers, item }">
+                    <td :colspan="headers.length">
+                        {{ item.note }}
+                    </td>
+                </template>
+                <template v-slot:[`item.priority`]="{ item }">
+                    <v-chip
+                        v-if="item.priority == 'Biasa'" class="ma-2" label outlined color="blue">Biasa</v-chip>
+                    <v-chip
+                    v-if="item.priority == 'Penting'" class="ma-2" label outlined color="red">Penting</v-chip>
+                    <v-chip
+                    v-if="item.priority == 'Tidak penting'" class="ma-2" label outlined color="green">Tidak Penting</v-chip>
+                </template>
+                <!-- v-slot untuk mengubh nilai dalam table, karena defaultnya hanya text, dan faktanya membutuhkan button (action) -->
                 <template v-slot:[`item.actions`]="{ item }"> 
-                    <v-btn small class="mr-2" @click="editItem(item)">edit</v-btn>
-                    <v-btn small @click="deleteItem(item)">delete</v-btn>
+                    <v-icon small color="blue" class="mr-2" @click="editItem(item)"> mdi-pencil</v-icon>
+                    <v-icon small color="red" @click="deleteItem(item)"> mdi-delete</v-icon>
                 </template>
             </v-data-table>
         </v-card>
+
+        <v-dialog v-model="dialogDelete" persistent max-width="300px">
+            <v-card>
+                <v-card-title><h1>Yakin ingin hapus ?</h1></v-card-title>
+            </v-card>
+            
+
+        </v-dialog>
 
         <v-dialog v-model="dialog" persistent max-width="600px">
             <v-card>
@@ -65,6 +94,11 @@ export default{
         return{
             search: null,
             dialog: false,
+            dialogDelete: false,
+            isEdit: 0,
+            beforeEditing: null,
+            expanded:[],
+            singleExpand: false,
             headers: [
                 {
                     text: "Task",
@@ -73,8 +107,8 @@ export default{
                     value: "task",
                 },
                 { text: "Priority", value: "priority" },
-                { text: "Note", value: "note" },
                 { text: "Actions", value: "actions" },
+                
             ],
             todos: [
                 {
@@ -102,11 +136,25 @@ export default{
     },
     methods: {
         save(){
-            this.todos.push(this.formTodo);
-            this.resetForm();
-            this.dialog = false;
+            if(this.isEdit ==0){
+                this.todos.push(this.formTodo);
+                this.resetForm();
+                this.dialog = false;
+            }else{
+                this.resetForm();
+                this.dialog=false;
+                this.isEdit = 0;
+            }
+            
         },
         cancel(){
+            if(this.isEdit==1){
+                this.todos[this.todos.findIndex(obj => obj.task === this.formTodo.task)].task = this.beforeEditing.task;
+                this.todos[this.todos.findIndex(obj => obj.task === this.formTodo.task)].priority = this.beforeEditing.priority;
+                this.todos[this.todos.findIndex(obj => obj.task === this.formTodo.task)].note = this.beforeEditing.note;
+                this.beforeEditing = null;
+                this.isEdit = 0;
+            }
             this.resetForm();
             this.dialog=false;
         },
@@ -116,6 +164,24 @@ export default{
                 priority: null,
                 note: null,
             };
+        },
+        editItem(item){
+            var itemEdit={
+                task: item.task,
+                priority: item.priority,
+                note: item.note,
+            };
+
+            this.beforeEditing = itemEdit;
+            this.formTodo = item;
+            this.isEdit = 1;
+            this.dialog = true;
+        },
+        deleteItem(item){
+            var x = window.confirm("Yakin ingin menghapus ?");
+            if(x == true){
+                this.todos.splice(item,1);
+            }
         }
     }
 };
