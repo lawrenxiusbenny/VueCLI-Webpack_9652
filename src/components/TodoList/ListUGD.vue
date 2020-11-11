@@ -14,7 +14,7 @@
                 <v-spacer></v-spacer>
                 <v-select
                     v-model="sort"
-                    label="Urutka"
+                    label="Urutkan"
                     outlined
                     :items="['Penting','Tidak Penting']"
                     hide-details>
