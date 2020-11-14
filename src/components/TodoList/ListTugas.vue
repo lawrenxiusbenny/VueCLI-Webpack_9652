@@ -23,6 +23,7 @@
                 <v-spacer></v-spacer>
                 <v-btn color="success" dark @click="dialog = true">Tambah</v-btn>
             </v-card-title>
+
             <v-data-table :headers="headers" :items="todos" :search="search" item-key="note" :expanded.sync="expanded" show-expand>
                 <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
@@ -42,14 +43,30 @@
                     <v-icon small color="blue" class="mr-2" @click="editItem(item)"> mdi-pencil</v-icon>
                     <v-icon small color="red" @click="deleteItem(item)"> mdi-delete</v-icon>
                 </template>
+
+                <template v-slot:[`item.check`]="{ item }">
+                    <input type="checkbox" v-model="checkedItem" :value="item.task">
+                </template>
             </v-data-table>
         </v-card>
+
+        <div v-if="checkedItem.length > 0">
+            <v-card class="my-5">
+                <v-card-text>
+                    <p v-show="checkedItem" style="text-align:left; margin-left:20px">Delete Multiple:</p>
+                    <ul v-for="(item, index) in checkedItem" :key="index" style="text-align:left; margin-left:20px">
+                        <li>{{ item }}</li>
+                    </ul>
+                    <v-btn depressed color="error" style="margin-right:400px; margin-top: 15px;" @click="deleteChecked">Hapus Semua</v-btn>
+                </v-card-text>
+            </v-card>
+        </div>
 
         <v-dialog v-model="dialogDelete" persistent max-width="300px">
                     <v-card>
                 <v-card-title>Yakin ingin hapus ?</v-card-title>
-                        <v-btn color="blue darken-1" text @click="cancelDelete()">Cancel</v-btn>
-                        <v-btn color="blue darken-1" text @click="deleteItemDialog(indexItemDelete)">Save</v-btn>
+                        <v-btn color="blue darken-1" text @click="cancelDelete()">Tidak</v-btn>
+                        <v-btn color="blue darken-1" text @click="deleteItemDialog(indexItemDelete)">Ya</v-btn>
                     </v-card>
         </v-dialog>
 
@@ -100,6 +117,7 @@ export default{
             isEdit: 0,
             beforeEditing: null,
             expanded:[],
+            checkedItem:[],
             indexItemDelete:"",
             singleExpand: false,
             headers: [
@@ -111,7 +129,7 @@ export default{
                 },
                 { text: "Priority", value: "priority" },
                 { text: "Actions", value: "actions" },
-                
+                { text: "", value: "check" },
             ],
             todos: [
                 {
@@ -202,7 +220,15 @@ export default{
             else{
                 this.todos.sort((todos)=>todos.priority == "Penting" ? 1 : -1);
             }
-        }
+        },
+        deleteChecked(){
+            var i;
+            for(i=0;i<this.checkedItem.length;i++){
+                var index = this.todos.findIndex(obj => obj.task === this.checkedItem[i]);
+                this.todos.splice(index,1);
+            }
+            this.checkedItem =[];
+        },
     }
 };
 </script>
